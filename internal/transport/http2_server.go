@@ -853,7 +853,6 @@ func (t *http2Server) handlePing(f *http2.PingFrame) {
 	}
 	pingAck := &ping{ack: true}
 	copy(pingAck.data[:], f.Data[:])
-	logger.Info("Sending ping ACK to client")
 	t.controlBuf.put(pingAck)
 
 	now := time.Now()
