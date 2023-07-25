@@ -237,6 +237,7 @@ func NewServerTransport(conn net.Conn, config *ServerConfig) (_ ServerTransport,
 		if err = syscall.SetTCPUserTimeout(conn, kp.Timeout); err != nil {
 			return nil, connectionErrorf(false, err, "transport: failed to set TCP_USER_TIMEOUT: %v", err)
 		}
+		logger.Info("Enabled Keepalive")
 	}
 	kep := config.KeepalivePolicy
 	if kep.MinTime == 0 {
@@ -648,6 +649,7 @@ func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.
 		case *http2.SettingsFrame:
 			t.handleSettings(frame)
 		case *http2.PingFrame:
+			logger.Info("Received HTTP2 ping frame from client")
 			t.handlePing(frame)
 		case *http2.WindowUpdateFrame:
 			t.handleWindowUpdate(frame)
@@ -851,6 +853,7 @@ func (t *http2Server) handlePing(f *http2.PingFrame) {
 	}
 	pingAck := &ping{ack: true}
 	copy(pingAck.data[:], f.Data[:])
+	logger.Info("Sending ping ACK to client")
 	t.controlBuf.put(pingAck)
 
 	now := time.Now()
@@ -1169,6 +1172,7 @@ func (t *http2Server) keepalive() {
 				if channelz.IsOn() {
 					atomic.AddInt64(&t.czData.kpCount, 1)
 				}
+				logger.Info("Sending ping")
 				t.controlBuf.put(p)
 				kpTimeoutLeft = t.kp.Timeout
 				outstandingPing = true

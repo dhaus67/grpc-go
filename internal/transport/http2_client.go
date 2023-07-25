@@ -265,6 +265,7 @@ func newHTTP2Client(connectCtx, ctx context.Context, addr resolver.Address, opts
 			return nil, connectionErrorf(false, err, "transport: failed to set TCP_USER_TIMEOUT: %v", err)
 		}
 		keepaliveEnabled = true
+		logger.Info("Enabled Keepalive")
 	}
 	var (
 		isSecure bool
@@ -1246,6 +1247,7 @@ func (t *http2Client) handlePing(f *http2.PingFrame) {
 	pingAck := &ping{ack: true}
 	copy(pingAck.data[:], f.Data[:])
 	t.controlBuf.put(pingAck)
+	logger.Info("Sending ping ACK to server")
 }
 
 func (t *http2Client) handleGoAway(f *http2.GoAwayFrame) {
@@ -1623,6 +1625,7 @@ func (t *http2Client) reader(errCh chan<- error) {
 		case *http2.SettingsFrame:
 			t.handleSettings(frame, false)
 		case *http2.PingFrame:
+			logger.Info("Received Ping HTTP2 Frame from Server")
 			t.handlePing(frame)
 		case *http2.GoAwayFrame:
 			t.handleGoAway(frame)
@@ -1703,6 +1706,7 @@ func (t *http2Client) keepalive() {
 					atomic.AddInt64(&t.czData.kpCount, 1)
 				}
 				t.controlBuf.put(p)
+				logger.Info("Sending HTTP2 Ping")
 				timeoutLeft = t.kp.Timeout
 				outstandingPing = true
 			}
