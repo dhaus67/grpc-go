@@ -1625,7 +1625,10 @@ func (t *http2Client) reader(errCh chan<- error) {
 		case *http2.SettingsFrame:
 			t.handleSettings(frame, false)
 		case *http2.PingFrame:
-			logger.Infof("Received Ping HTTP from server for %s", t.address.Addr)
+			logger.Infof(`Received Ping HTTP/2 frame from server.
+Address: %s
+Remote Address: %s
+Local Address : %s`, t.address.String(), t.remoteAddr.String(), t.localAddr.String())
 			t.handlePing(frame)
 		case *http2.GoAwayFrame:
 			t.handleGoAway(frame)

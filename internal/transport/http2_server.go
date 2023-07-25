@@ -649,7 +649,9 @@ func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.
 		case *http2.SettingsFrame:
 			t.handleSettings(frame)
 		case *http2.PingFrame:
-			logger.Info("Received HTTP2 ping frame from client")
+			logger.Infof(`Received Ping HTTP/2 frame from client.
+Remote Address: %s
+Local Address : %s`, t.remoteAddr.String(), t.localAddr.String())
 			t.handlePing(frame)
 		case *http2.WindowUpdateFrame:
 			t.handleWindowUpdate(frame)
